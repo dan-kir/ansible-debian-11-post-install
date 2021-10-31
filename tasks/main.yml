@@ -1,0 +1,72 @@
+---
+  ## machine_hostname var defined in inventory
+- name: Configure system hostname
+  ansible.builtin.hostname:
+    name: "{{ machine_hostname }}"
+    use: systemd
+
+- name: Configure localhost entry in /etc/hosts
+  ansible.builtin.blockinfile:
+    dest: "/etc/hosts"
+    block: |
+      127.0.0.1 localhost {{ machine_hostname }}
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Upgrade all packages to their latest version
+  ansible.builtin.apt:
+    name: "*"
+    state: latest
+  when:
+    - upgrades_enabled | bool
+
+- name: Install essential packages
+  ansible.builtin.apt:
+    name: "{{ essential_packages }}"
+    state: present
+
+- name: Set users default shell to Zsh
+  ansible.builtin.user:
+    name: "{{ ansible_ssh_user }}"
+    shell: /usr/bin/zsh
+
+- name: Set roots default shell to Zsh
+  ansible.builtin.user:
+    name: root
+    shell: /usr/bin/zsh
+
+- name: Install users .zshrc File
+  ansible.builtin.copy:
+    src: files/user.zshrc
+    dest: "/home/{{ ansible_ssh_user }}/.zshrc"
+    owner: "{{ ansible_ssh_user }}"
+    group: "{{ ansible_ssh_user }}"
+    mode: 0600
+
+- name: Install roots .zshrc File
+  ansible.builtin.copy:
+    src: files/root.zshrc
+    dest: "/root/.zshrc"
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Install users .tmux file
+  ansible.builtin.copy:
+    src: files/tmux.conf
+    dest: "/home/{{ ansible_ssh_user }}/.tmux.conf"
+    owner: "{{ ansible_ssh_user }}"
+    group: "{{ ansible_ssh_user }}"
+    mode: 0600
+
+- name: Install Zram Swap
+  ansible.builtin.copy:
+    src: files/zramswap
+    dest: "/etc/default/zramswap"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - Restart zramswap
