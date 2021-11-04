@@ -1,6 +1,6 @@
 ansible-debian-11-post-install
 ==============================
-Installs some essential packages and performs some basic configurations.
+Installs some essential packages and applies some basic configurations.
 
 Requirements
 ------------
