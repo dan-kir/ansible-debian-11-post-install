@@ -22,8 +22,6 @@ Example Playbook
       roles:
         - ansible-debian-11-post-install
 
-
-
 Example Inventory
 -----------------
 *The `machine_hostname` variable is created for consistency when no DNS record exists*
